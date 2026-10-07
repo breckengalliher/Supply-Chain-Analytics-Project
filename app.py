@@ -163,6 +163,15 @@ st.caption(
     "Inputs are automatically normalized to 100%, so the relative emphasis matters."
 )
 
+DELIVERY_DISRUPTION_WEIGHTS = {
+    "delivery_risk": 45,
+    "quality_risk": 10,
+    "lead_time_variability_risk": 20,
+    "geographic_risk": 10,
+    "financial_risk": 5,
+    "dependency_risk": 10,
+}
+
 weight_columns = st.columns(3)
 scenario_weights = {}
 component_labels = {
@@ -173,13 +182,34 @@ component_labels = {
     "financial_risk": "Financial health",
     "dependency_risk": "Dependency",
 }
+
+
+def set_scenario_weights(weights):
+    for component, value in weights.items():
+        st.session_state[f"weight_{component}"] = int(value)
+
+
+control_columns = st.columns([1, 1, 2])
+control_columns[0].button(
+    "Load disruption scenario",
+    on_click=set_scenario_weights,
+    args=(DELIVERY_DISRUPTION_WEIGHTS,),
+    use_container_width=True,
+)
+control_columns[1].button(
+    "Reset to baseline",
+    on_click=set_scenario_weights,
+    args=({name: int(weight * 100) for name, weight in RISK_WEIGHTS.items()},),
+    use_container_width=True,
+)
+
 for index, (component, default_weight) in enumerate(RISK_WEIGHTS.items()):
     with weight_columns[index % 3]:
         scenario_weights[component] = st.slider(
             component_labels[component],
             min_value=0,
             max_value=60,
-            value=int(default_weight * 100),
+            value=DELIVERY_DISRUPTION_WEIGHTS[component],
             step=5,
             key=f"weight_{component}",
             help="Relative importance; all six values are normalized after selection.",
@@ -191,11 +221,27 @@ if normalized_total == 0:
     scenario_weights = {name: int(weight * 100) for name, weight in RISK_WEIGHTS.items()}
     normalized_total = sum(scenario_weights.values())
 scenario = apply_weight_scenario(supplier_scores, scenario_weights)
+baseline_percentages = {
+    name: int(weight * 100) for name, weight in RISK_WEIGHTS.items()
+}
+is_baseline = scenario_weights == baseline_percentages
+is_delivery_disruption = scenario_weights == DELIVERY_DISRUPTION_WEIGHTS
 normalized_copy = ", ".join(
     f"{component_labels[name]} {value / normalized_total:.0%}"
     for name, value in scenario_weights.items()
 ) if normalized_total else "No valid scenario"
-st.caption(f"Normalized scenario: {normalized_copy}")
+if is_baseline:
+    scenario_name = "Current Policy (baseline)"
+elif is_delivery_disruption:
+    scenario_name = "Delivery Disruption Scenario"
+else:
+    scenario_name = "Custom Scenario"
+st.caption(f"**Active scenario: {scenario_name}** · Normalized weights: {normalized_copy}")
+if is_baseline:
+    st.info(
+        "The scenario currently matches Current Policy, so scores and rankings are identical. "
+        "Adjust a weight or load the disruption scenario to compare outcomes."
+    )
 
 baseline_top10 = set(supplier_scores.nlargest(10, "risk_score")["supplier_id"])
 scenario_top10 = set(scenario.nsmallest(10, "scenario_rank")["supplier_id"])
@@ -223,7 +269,7 @@ comparison = scenario[scenario["supplier_id"].isin(comparison_ids)][
     value_name="score",
 )
 comparison["score_type"] = comparison["score_type"].map(
-    {"risk_score": "Baseline", "scenario_score": "Scenario"}
+    {"risk_score": "Current Policy", "scenario_score": scenario_name}
 )
 fig = px.bar(
     comparison,
@@ -232,35 +278,45 @@ fig = px.bar(
     color="score_type",
     barmode="group",
     orientation="h",
-    color_discrete_map={"Baseline": "#A9B4BF", "Scenario": "#315F85"},
+    color_discrete_map={"Current Policy": "#A9B4BF", scenario_name: "#315F85"},
     labels={"score": "Risk score (0–100)", "supplier_name": "Supplier", "score_type": "Scoring model"},
 )
 fig.update_layout(height=520, margin=dict(l=10, r=15, t=10, b=10), legend_orientation="h")
 fig.update_xaxes(range=[0, 100])
-st.subheader("Baseline and scenario scores")
+st.subheader("Current Policy and scenario scores")
 st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("Largest ranking changes")
-movers = scenario.assign(abs_rank_change=scenario["rank_change"].abs()).nlargest(
+movers = scenario.loc[scenario["rank_change"].ne(0)].assign(
+    abs_rank_change=lambda frame: frame["rank_change"].abs()
+).nlargest(
     12, "abs_rank_change"
 )
-st.dataframe(
-    movers[
-        [
-            "supplier_name", "baseline_rank", "scenario_rank", "rank_change",
-            "risk_score", "scenario_score", "risk_tier", "scenario_risk_tier",
-        ]
-    ],
-    use_container_width=True,
-    hide_index=True,
-    column_config={
-        "rank_change": st.column_config.NumberColumn(
-            "Rank movement", help="Positive values move closer to rank 1"
-        ),
-        "risk_score": st.column_config.NumberColumn("Baseline score", format="%.1f"),
-        "scenario_score": st.column_config.NumberColumn("Scenario score", format="%.1f"),
-    },
-)
+if movers.empty:
+    st.info(
+        "No suppliers changed rank because the scenario matches Current Policy. "
+        "Adjust a weight or load the disruption scenario to reveal ranking sensitivity."
+    )
+else:
+    st.dataframe(
+        movers[
+            [
+                "supplier_name", "baseline_rank", "scenario_rank", "rank_change",
+                "risk_score", "scenario_score", "risk_tier", "scenario_risk_tier",
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "baseline_rank": st.column_config.NumberColumn("Current Policy rank"),
+            "scenario_rank": st.column_config.NumberColumn("Scenario rank"),
+            "rank_change": st.column_config.NumberColumn(
+                "Rank movement", help="Positive values move closer to rank 1"
+            ),
+            "risk_score": st.column_config.NumberColumn("Current Policy score", format="%.1f"),
+            "scenario_score": st.column_config.NumberColumn("Scenario score", format="%.1f"),
+        },
+    )
 
 with st.expander("Methodology and limitations"):
     st.markdown(
