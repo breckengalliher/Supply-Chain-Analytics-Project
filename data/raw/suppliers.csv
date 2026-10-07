@@ -1,0 +1,41 @@
+supplier_id,supplier_name,country,region,financial_health_score,geographic_risk_score,contract_status
+SUP-001,Vector Dynamics 01,Mexico,North America,61,33,Active
+SUP-002,Pioneer Dynamics 02,United States,North America,86,16,Active
+SUP-003,Titan Precision 03,Canada,North America,85,5,Active
+SUP-004,Aero Components 04,India,Asia-Pacific,53,39,Under review
+SUP-005,Orion Precision 05,Mexico,North America,62,22,Under review
+SUP-006,Vector Materials 06,Poland,Europe,82,15,Under review
+SUP-007,Atlas Precision 07,Mexico,North America,58,27,Active
+SUP-008,Aero Precision 08,United Kingdom,Europe,85,14,Active
+SUP-009,Pioneer Components 09,Japan,Asia-Pacific,69,5,Active
+SUP-010,Aero Systems 10,Poland,Europe,58,45,Under review
+SUP-011,Vector Materials 11,Germany,Europe,72,10,Active
+SUP-012,Vector Precision 12,Poland,Europe,57,44,Active
+SUP-013,Nova Systems 13,Poland,Europe,67,27,Active
+SUP-014,Orion Dynamics 14,Canada,North America,57,17,Active
+SUP-015,Nova Dynamics 15,Japan,Asia-Pacific,94,24,Active
+SUP-016,Atlas Systems 16,South Korea,Asia-Pacific,69,31,Active
+SUP-017,Vector Precision 17,United Kingdom,Europe,62,27,Active
+SUP-018,Pioneer Dynamics 18,Germany,Europe,73,12,Active
+SUP-019,Aero Precision 19,Canada,North America,69,26,Active
+SUP-020,Vector Systems 20,India,Asia-Pacific,70,42,Active
+SUP-021,Nova Materials 21,Germany,Europe,64,10,Under review
+SUP-022,Atlas Components 22,South Korea,Asia-Pacific,73,38,Active
+SUP-023,Pioneer Dynamics 23,Poland,Europe,91,22,Active
+SUP-024,Vector Materials 24,Canada,North America,65,5,Under review
+SUP-025,Vector Systems 25,United States,North America,74,20,Active
+SUP-026,Orion Components 26,Canada,North America,76,11,Under review
+SUP-027,Summit Dynamics 27,Germany,Europe,58,18,Under review
+SUP-028,Summit Materials 28,Mexico,North America,84,38,Active
+SUP-029,Orion Components 29,United Kingdom,Europe,82,18,Under review
+SUP-030,Pioneer Dynamics 30,Canada,North America,46,8,Active
+SUP-031,Summit Precision 31,Japan,Asia-Pacific,74,5,Active
+SUP-032,Nova Materials 32,Malaysia,Asia-Pacific,69,48,Active
+SUP-033,Pioneer Materials 33,Japan,Asia-Pacific,98,26,Active
+SUP-034,Vector Systems 34,Japan,Asia-Pacific,59,22,Active
+SUP-035,Aero Systems 35,Malaysia,Asia-Pacific,75,37,Active
+SUP-036,Aero Components 36,United States,North America,98,9,Active
+SUP-037,Summit Systems 37,Poland,Europe,71,41,Under review
+SUP-038,Titan Precision 38,Mexico,North America,76,24,Active
+SUP-039,Vector Dynamics 39,United States,North America,72,37,Active
+SUP-040,Vector Precision 40,United Kingdom,Europe,98,14,Active
